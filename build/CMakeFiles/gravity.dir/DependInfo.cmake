@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/sanket/Desktop/c_projects/gravity/main.cpp" "CMakeFiles/gravity.dir/main.cpp.o" "gcc" "CMakeFiles/gravity.dir/main.cpp.o.d"
+  "/Users/sanket/Desktop/c_projects/gravity/src/main.cpp" "CMakeFiles/gravity.dir/src/main.cpp.o" "gcc" "CMakeFiles/gravity.dir/src/main.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

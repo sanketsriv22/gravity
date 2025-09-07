@@ -72,29 +72,30 @@ include CMakeFiles/gravity.dir/flags.make
 CMakeFiles/gravity.dir/codegen:
 .PHONY : CMakeFiles/gravity.dir/codegen
 
-CMakeFiles/gravity.dir/main.cpp.o: CMakeFiles/gravity.dir/flags.make
-CMakeFiles/gravity.dir/main.cpp.o: /Users/sanket/Desktop/c_projects/gravity/main.cpp
-CMakeFiles/gravity.dir/main.cpp.o: CMakeFiles/gravity.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/sanket/Desktop/c_projects/gravity/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/gravity.dir/main.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/gravity.dir/main.cpp.o -MF CMakeFiles/gravity.dir/main.cpp.o.d -o CMakeFiles/gravity.dir/main.cpp.o -c /Users/sanket/Desktop/c_projects/gravity/main.cpp
+CMakeFiles/gravity.dir/src/main.cpp.o: CMakeFiles/gravity.dir/flags.make
+CMakeFiles/gravity.dir/src/main.cpp.o: /Users/sanket/Desktop/c_projects/gravity/src/main.cpp
+CMakeFiles/gravity.dir/src/main.cpp.o: CMakeFiles/gravity.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/sanket/Desktop/c_projects/gravity/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/gravity.dir/src/main.cpp.o"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/gravity.dir/src/main.cpp.o -MF CMakeFiles/gravity.dir/src/main.cpp.o.d -o CMakeFiles/gravity.dir/src/main.cpp.o -c /Users/sanket/Desktop/c_projects/gravity/src/main.cpp
 
-CMakeFiles/gravity.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/gravity.dir/main.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/sanket/Desktop/c_projects/gravity/main.cpp > CMakeFiles/gravity.dir/main.cpp.i
+CMakeFiles/gravity.dir/src/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/gravity.dir/src/main.cpp.i"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/sanket/Desktop/c_projects/gravity/src/main.cpp > CMakeFiles/gravity.dir/src/main.cpp.i
 
-CMakeFiles/gravity.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/gravity.dir/main.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/sanket/Desktop/c_projects/gravity/main.cpp -o CMakeFiles/gravity.dir/main.cpp.s
+CMakeFiles/gravity.dir/src/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/gravity.dir/src/main.cpp.s"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/sanket/Desktop/c_projects/gravity/src/main.cpp -o CMakeFiles/gravity.dir/src/main.cpp.s
 
 # Object files for target gravity
 gravity_OBJECTS = \
-"CMakeFiles/gravity.dir/main.cpp.o"
+"CMakeFiles/gravity.dir/src/main.cpp.o"
 
 # External object files for target gravity
 gravity_EXTERNAL_OBJECTS =
 
-gravity: CMakeFiles/gravity.dir/main.cpp.o
+gravity: CMakeFiles/gravity.dir/src/main.cpp.o
 gravity: CMakeFiles/gravity.dir/build.make
+gravity: /opt/homebrew/lib/libglfw.3.4.dylib
 gravity: CMakeFiles/gravity.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/sanket/Desktop/c_projects/gravity/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable gravity"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gravity.dir/link.txt --verbose=$(VERBOSE)

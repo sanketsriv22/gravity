@@ -1,8 +1,8 @@
 [
 {
   "directory": "/Users/sanket/Desktop/c_projects/gravity/build",
-  "command": "/usr/bin/clang++  -I/Users/sanket/Desktop/c_projects/gravity -I/Users/sanket/Desktop/c_projects/gravity/utils -g -std=gnu++20 -arch arm64 -o CMakeFiles/gravity.dir/main.cpp.o -c /Users/sanket/Desktop/c_projects/gravity/main.cpp",
-  "file": "/Users/sanket/Desktop/c_projects/gravity/main.cpp",
-  "output": "CMakeFiles/gravity.dir/main.cpp.o"
+  "command": "/usr/bin/clang++  -I/Users/sanket/Desktop/c_projects/gravity -I/Users/sanket/Desktop/c_projects/gravity/utils -isystem /opt/homebrew/include -g -std=gnu++20 -arch arm64 -o CMakeFiles/gravity.dir/src/main.cpp.o -c /Users/sanket/Desktop/c_projects/gravity/src/main.cpp",
+  "file": "/Users/sanket/Desktop/c_projects/gravity/src/main.cpp",
+  "output": "CMakeFiles/gravity.dir/src/main.cpp.o"
 }
 ]
