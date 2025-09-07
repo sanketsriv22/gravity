@@ -21,9 +21,9 @@ ___
 ### Prerequisites
 - **C++ compiler** ('clang++' or 'g++')
 - **glfw** (installed via Homebrew on macOS):
-  ```bash
-  brew install glfw
-  ```
+```bash
+brew install glfw
+```
 ## Clone the Repo
 ```bash
 git clone https://github.com/sanketsriv22/gravity.git

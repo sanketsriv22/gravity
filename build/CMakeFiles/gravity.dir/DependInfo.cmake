@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/Users/sanket/Desktop/c_projects/gravity/external/glad/src/glad.c" "CMakeFiles/gravity.dir/external/glad/src/glad.c.o" "gcc" "CMakeFiles/gravity.dir/external/glad/src/glad.c.o.d"
   "/Users/sanket/Desktop/c_projects/gravity/src/main.cpp" "CMakeFiles/gravity.dir/src/main.cpp.o" "gcc" "CMakeFiles/gravity.dir/src/main.cpp.o.d"
   )
 
