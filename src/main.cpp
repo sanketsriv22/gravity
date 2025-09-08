@@ -6,7 +6,8 @@
 #include <GLFW/glfw3.h>
 
 
-int SCREEN_WIDTH = 1280, SCREEN_HEIGHT = 800;
+int SCREEN_WIDTH = 3440, SCREEN_HEIGHT = 1000;
+
 float aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
 
 const float gravityEarth = 9.81f / 50000.0f; //not sure why i need to slow it down so much
@@ -35,7 +36,8 @@ const char *fragmentShaderSource = "#version 330 core\n"
 // resizing callback
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    glfwGetFramebufferSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
+    // glfwGetFramebufferSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
+    aspectRatio = static_cast<float>(width) / static_cast<float>(height);
     glViewport(0, 0, width, height);
 }
 
@@ -198,29 +200,33 @@ public:
         replaceVelocity(newVelocity);
     }
 
-    void collisionCheck()
+    void collisionCheck(float aspectRatio)
     {
-        if (this->position.y - this->radius < -1.0f)
+        float limitX = aspectRatio;
+        float limitY = 1.0f;
+        // y check
+        if (this->position.y - this->radius < -limitY)
         {
-            this->position.y = -1.0f + this->radius;
+            this->position.y = -limitY + this->radius;
             updateVertices();
             this->velocity.y *= -0.95;
         }
-        if (this->position.x + this->radius > 1.0f)
+        if (this->position.y + this->radius > limitY)
         {
-            this->position.x = 1.0f - this->radius;
+            this->position.y = limitY - this->radius;
+            updateVertices();
+            this->velocity.y *= -0.95;
+        }
+        // x check
+        if (this->position.x - this->radius < -limitX)
+        {
+            this->position.x = -limitX + this->radius;
             updateVertices();
             this->velocity.x *= -0.95;
         }
-        if (this->position.y + this->radius > 1.0f)
+        if (this->position.x + this->radius > limitX)
         {
-            this->position.y = 1.0f - this->radius;
-            updateVertices();
-            this->velocity.y *= -0.95;
-        }
-        if (this->position.x - this->radius < -1.0f)
-        {
-            this->position.x = -1.0f + this->radius;
+            this->position.x = limitX - this->radius;
             updateVertices();
             this->velocity.x *= -0.95;
         }
@@ -325,7 +331,7 @@ int main()
     // create planets list
     std::vector<Object> planets;
 
-    // add 2 planets
+    // add 4 planets
     planets.push_back(Object());
     planets.push_back(Object());
     planets.push_back(Object());
@@ -397,7 +403,7 @@ int main()
         processInput(window); // created to exit on esc key press
 
         // render + draw
-        aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
+        // aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
         glUniform1f(aspectRatioLocation, aspectRatio);
 
         glUseProgram(shaderProgram);
@@ -409,7 +415,7 @@ int main()
         for (Object &planet : planets)
         {
             // update objects
-            planet.collisionCheck();
+            planet.collisionCheck(aspectRatio);
             planet.accelerate(deltaTime);
             planet.updatePosition(deltaTime);
 
