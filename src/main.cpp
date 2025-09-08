@@ -48,16 +48,60 @@ void processInput(GLFWwindow* window)
     }
 }
 
-
-struct Vector3
-{
-    float x, y, z;
-};
-
 struct Color
 {
     float R, G, B;
 };
+
+
+struct Vector3
+{
+    float x, y, z;
+
+    Vector3(float x, float y, float z)
+        : x(x), y(y), z(z) {}
+    Vector3() {}
+
+    Vector3 Add(const Vector3& other) const
+    {
+        return Vector3(this->x + other.x, this->y + other.y, this->z + other.z);
+    }
+    
+    Vector3 operator+(const Vector3& other) const
+    {
+        return Add(other);
+    }
+
+    void operator+=(const Vector3& other)
+    {
+        this->x += other.x;
+        this->y += other.y;
+        this->z += other.z;
+    }
+
+    Vector3 scalarMultiply(const float& other) const
+    {
+        return Vector3(this->x * other, this->y * other, this->z * other);
+    }
+    
+    Vector3 operator*(const float& other) const
+    {
+        return scalarMultiply(other);
+    }
+
+    Vector3 operator-(const Vector3& other) const
+    {
+        return Vector3(this->x - other.x, this->y - other.y, this->z - other.z);
+    }
+};
+
+// operator overloading practice for output stream on Vector3 class
+std::ostream& operator<<(std::ostream& stream, const Vector3 &other)
+{
+    stream << '(' << other.x << ", " << other.y << ", " << other.z << ')';
+    return stream;
+}
+
 
 class Object
 {
@@ -128,20 +172,30 @@ public:
         }
     }
 
+    void replacePosition(const Vector3& newPosition)
+    {
+        this->position = newPosition;
+    }
+
+    void replaceVelocity(const Vector3& newVelocity)
+    {
+        this->velocity = newVelocity;
+    }
+
     void updatePosition(float deltaTime)
     {
-        this->position.x += this->velocity.x * deltaTime;
-        this->position.y += this->velocity.y * deltaTime;
-        this->position.z += this->velocity.z * deltaTime;
 
+        Vector3 scaledVelocity(this->velocity * deltaTime);
+        Vector3 newPosition(this->position + scaledVelocity);
+        replacePosition(newPosition);
         updateVertices();
     }
 
     void accelerate(float deltaTime)
     {
-        this->velocity.x += this->acceleration.x * deltaTime;
-        this->velocity.y += this->acceleration.y * deltaTime;
-        this->velocity.z += this->acceleration.z * deltaTime;
+        Vector3 scaledAcceleration(this->acceleration * deltaTime);
+        Vector3 newVelocity(this->velocity + scaledAcceleration);
+        replaceVelocity(newVelocity);
     }
 
     void collisionCheck()
@@ -186,25 +240,22 @@ struct System
     {
         for (int i = 0; i < planets.size(); i++)
         {
-            Vector3 totalAcceleration = {0.0f, 0.0f, 0.0f};
+            Vector3 totalAcceleration(0.0f, 0.0f, 0.0f);
             for (int j = 0; j < planets.size(); j++)
             {
                 if (i==j) continue;
-                Vector3 distance;
-                distance.x = planets[j]->position.x - planets[i]->position.x;
-                distance.y = planets[j]->position.y - planets[i]->position.y;
-                distance.z = planets[j]->position.z - planets[i]->position.z;
+
+                Vector3 distance(planets[j]->position - planets[i]->position);
                 
                 float r = sqrtf(pow(distance.x, 2) + pow(distance.y, 2) + pow(distance.z, 2) + 0.01f);
                 
                 // gravitational acceleration magnitude (mass of i reduces to 1)
                 float a = (gravityConstant * planets[j]->mass) / pow(r, 2);
 
-                Vector3 unitVector = {distance.x/r, distance.y/r, distance.z/r};
+                Vector3 unitVector(distance.x/r, distance.y/r, distance.z/r);
+                
+                totalAcceleration += unitVector*a;
 
-                totalAcceleration.x += a*unitVector.x;
-                totalAcceleration.y += a*unitVector.y;
-                totalAcceleration.z += a*unitVector.z;
             }
             planets[i]->acceleration = totalAcceleration;
         }
@@ -280,7 +331,7 @@ int main()
     planets.push_back(Object());
     planets.push_back(Object());
 
-    float iV = 0.3e-1f;
+    float iV = 0.3e-1f; // initial velocity
 
     // offset starting values
     planets[0].color = {1.0f, 1.0f, 0.0f}; // yellow
@@ -332,6 +383,8 @@ int main()
 
     float lastTime = glfwGetTime();
 
+    std::cout << planets[0].position << std::endl;
+
     while(!glfwWindowShouldClose(window))
     {
         float currentTime = glfwGetTime();
@@ -367,7 +420,7 @@ int main()
             glUniform3f(colorLocation, planet.color.R, planet.color.G, planet.color.B);
             glDrawArrays(GL_TRIANGLE_FAN, 0, planet.vertices.size() / 3);
         }
-        std::cout << planets[0].acceleration.x << std::endl;
+        // std::cout << planets[0].acceleration.x << std::endl;
         // std::cout << planets[0].acceleration.x << std::endl;
         // std::cout << planets[0].acceleration.z << std::endl;
 
