@@ -95,7 +95,7 @@ public:
     Object() : 
         radius{0.025f},
         numParts{50},
-        mass{radius*1e7f}, // how should i represent mass? area for now
+        mass{7.35e9f}, // how should i represent mass? scaled down moon mass for now
         position{0.0f, 0.0f, 0.0f},
         velocity{0.0f, 0.0f, 0.0f},
         vertices{generateVertices()},
@@ -128,20 +128,20 @@ public:
         }
     }
 
-    void updatePosition()
+    void updatePosition(float deltaTime)
     {
-        this->position.x += this->velocity.x;
-        this->position.y += this->velocity.y;
-        this->position.z += this->velocity.z;
+        this->position.x += this->velocity.x * deltaTime;
+        this->position.y += this->velocity.y * deltaTime;
+        this->position.z += this->velocity.z * deltaTime;
 
         updateVertices();
     }
 
-    void accelerate()
+    void accelerate(float deltaTime)
     {
-        this->velocity.x += this->acceleration.x;
-        this->velocity.y += this->acceleration.y;
-        this->velocity.z += this->acceleration.z;
+        this->velocity.x += this->acceleration.x * deltaTime;
+        this->velocity.y += this->acceleration.y * deltaTime;
+        this->velocity.z += this->acceleration.z * deltaTime;
     }
 
     void collisionCheck()
@@ -195,7 +195,7 @@ struct System
                 distance.y = planets[j]->position.y - planets[i]->position.y;
                 distance.z = planets[j]->position.z - planets[i]->position.z;
                 
-                float r = sqrtf(pow(distance.x, 2) + pow(distance.y, 2) + pow(distance.z, 2));
+                float r = sqrtf(pow(distance.x, 2) + pow(distance.y, 2) + pow(distance.z, 2) + 0.01f);
                 
                 // gravitational acceleration magnitude (mass of i reduces to 1)
                 float a = (gravityConstant * planets[j]->mass) / pow(r, 2);
@@ -277,18 +277,33 @@ int main()
     // add 2 planets
     planets.push_back(Object());
     planets.push_back(Object());
+    planets.push_back(Object());
+    planets.push_back(Object());
+
+    float iV = 0.3e-1f;
 
     // offset starting values
     planets[0].color = {1.0f, 1.0f, 0.0f}; // yellow
-    planets[0].radius = 0.05f;
+    // planets[0].radius = 0.1f;
+    // planets[0].mass = 5.97e10f;
     planets[0].position = {-0.3f, 0.0f, 0.0f};
-    planets[0].velocity = {0.0f, 0.2e-2f, 0.0f};
+    planets[0].velocity = {0.0f, iV, 0.0f};
     planets[0].updateVertices();
 
     planets[1].color = {0.0f, 1.0f, 1.0f}; // cyan
     planets[1].position = {0.3f, 0.0f, 0.0f};
-    planets[1].velocity = {0.0f, -0.2e-2f, 0.0f};
+    planets[1].velocity = {0.0f, -iV, 0.0f};
     planets[1].updateVertices();
+
+    planets[2].color = {1.0f, 0.0f, 0.0f}; // red
+    planets[2].position = {0.0f, 0.3f, 0.0f};
+    planets[2].velocity = {iV, 0.0f, 0.0f};
+    planets[2].updateVertices();
+    
+    planets[3].color = {1.0f, 0.0f, 1.0f}; // purp
+    planets[3].position = {0.0f, -0.3f, 0.0f};
+    planets[3].velocity = {iV, 0.0f, 0.0f};
+    planets[3].updateVertices();
 
     // System system(planets[0], planets[1]);
     std::vector<Object*> planetPtrs;
@@ -321,8 +336,6 @@ int main()
     {
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - lastTime;
-
-        // if deltaTime
         lastTime = currentTime;
 
         // clear colors from each pixel every frame
@@ -344,8 +357,8 @@ int main()
         {
             // update objects
             planet.collisionCheck();
-            planet.accelerate();
-            planet.updatePosition();
+            planet.accelerate(deltaTime);
+            planet.updatePosition(deltaTime);
 
             // update vertex buffer for this planet
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
