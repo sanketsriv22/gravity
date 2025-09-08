@@ -9,7 +9,9 @@
 int SCREEN_WIDTH = 1280, SCREEN_HEIGHT = 800;
 float aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
 
-const float gravity = 9.81f / 10000.0f; //not sure why i need to slow it down so much
+const float gravityEarth = 9.81f / 50000.0f; //not sure why i need to slow it down so much
+
+const float gravityConstant = 6.674e-11f; // universal gravitational constant
 
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
@@ -50,21 +52,44 @@ struct Vector3
     float x, y, z;
 };
 
-class Ball
+class Object
 {
+private:
+    std::vector<float> generateVertices()
+        {
+            std::vector<float> vertices;
+            vertices.reserve((numParts + 2) * 3);
+
+            // center vertex
+            vertices.insert(vertices.end(), {position.x, position.y, position.z});
+
+            for (int i = 0; i<=numParts; i++)
+            {
+                float angle = 2.0f * 3.14159f * static_cast<float>(i)/numParts;
+                vertices.insert(vertices.end(),
+                {
+                    radius * cos(angle), // x    
+                    radius * sin(angle), // y
+                    position.z           // z
+                });
+            }
+            return vertices;
+        }
 public:
+    float radius;
+    const int numParts;
+    float mass;
     Vector3 position;
     Vector3 velocity;
-    const float radius;
-    const int numParts;
     std::vector<float> vertices;
 
-    Ball() : 
-        position{0.0f, 0.0f, 0.0f},
-        radius{0.1f},
+    Object() : 
+        radius{0.05f},
         numParts{50},
-        vertices{generateVertices()},
-        velocity{0.0f, 0.0f, 0.0f}
+        mass{0.1f},
+        position{0.0f, 0.0f, 0.0f},
+        velocity{0.0f, 0.0f, 0.0f},
+        vertices{generateVertices()}
         {};
 
     Vector3 const GetPosition()
@@ -72,59 +97,58 @@ public:
         return position;
     }
 
-    std::vector<float> generateVertices()
-    {
-        std::vector<float> vertices;
-        vertices.reserve((numParts + 2) * 3);
-
-        // center vertex
-        vertices.insert(vertices.end(), {position.x, position.y, position.z});
-
-        for (int i = 0; i<=numParts; i++)
-        {
-            float angle = 2.0f * 3.14159f * static_cast<float>(i)/numParts;
-            vertices.insert(vertices.end(),
-            {
-                radius * cos(angle), // x    
-                radius * sin(angle), // y
-                position.z           // z
-            });
-        }
-        return vertices;
-    }
-
     void updateVertices()
     // simply updates the vertices vector
     {
         // update center
-        vertices[0] = position.x;
-        vertices[1] = position.y;
-        vertices[2] = position.z;
+        this->vertices[0] = this->position.x;
+        this->vertices[1] = this->position.y;
+        this->vertices[2] = this->position.z;
 
         // update rest of vertices
-        for (int i = 0; i <= numParts; i++)
+        for (int i = 0; i <= this->numParts; i++)
         {
-            float angle = 2.0f * 3.14159f * static_cast<float>(i)/numParts;
+            float angle = 2.0f * 3.14159f * static_cast<float>(i)/this->numParts;
             // start with 3rd index, each vertex has 3 floats
             int idx = 3 + (i*3);
-            vertices[idx]     = radius * cos(angle) + position.x;
-            vertices[idx + 1] = radius * sin(angle) + position.y;
-            vertices[idx + 2] = 0                   + position.z;   //unchanged for now
+            this->vertices[idx]     = this->radius * cos(angle) + this->position.x;
+            this->vertices[idx + 1] = this->radius * sin(angle) + this->position.y;
+            this->vertices[idx + 2] = 0                         + this->position.z;   //unchanged for now
         }
     }
 
-    void updatePosition(float deltaTime)
+    void updatePosition()
     {
-        position.x += velocity.x * deltaTime;
-        position.y += velocity.y * deltaTime;
-        position.z += velocity.z * deltaTime;
+        this->position.x += this->velocity.x;
+        this->position.y += this->velocity.y;
+        this->position.z += this->velocity.z;
+
+        updateVertices();
     }
 
-    void updateVelocity(float deltaTime)
+    void accelerate(float aX, float aY)
     {
-        velocity.y +=  - gravity * deltaTime;
+        this->velocity.x += aX;
+        this->velocity.y += aY;
+    }
+
+    void collisionCheck()
+    {
+        if (this->position.y - this->radius < -1.0f)
+        {
+            this->position.y = -1.0f + this->radius;
+            updateVertices();
+            this->velocity.y *= -0.95;
+        }
+        if (this->position.x + this->radius > 1.0f)
+        {
+            this->position.x = 1.0f - this->radius;
+            updateVertices();
+            this->velocity.x *= -0.95;
+        }
     }
 };
+
 
 int main()
 {
@@ -184,13 +208,20 @@ int main()
     // get uniform location for aspect ratio
     GLint aspectRatioLocation = glGetUniformLocation(shaderProgram, "aspectRatio"); 
 
-    // get vertices for a circle
-    Ball ball;
-    ball.generateVertices();
-    
-    std::cout << "Generating circle with " << ball.vertices.size() / 3 << " vertices" << std::endl;
+    // create planets list
+    std::vector<Object> planets;
 
-    // vertex array and buffer objects
+    // add 2 planets
+    planets.push_back(Object());
+    planets.push_back(Object());
+
+    // change starting position
+    planets[0].position = {-0.2f, 0.0f, 0.0f};
+    planets[0].updateVertices();
+    planets[1].position = {+0.2f, 0.0f, 0.0f};
+    planets[1].updateVertices();
+
+    // vertex array and buffer objects (is it good practice to have a separate vbo/vao for each planet?)
     GLuint VAO, VBO;
 
     // create and bind VAO first
@@ -200,7 +231,7 @@ int main()
     // create and setup VBO
     glGenBuffers(1, &VBO); // passing reference so no copy made
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, ball.vertices.size() * sizeof(float), ball.vertices.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, planets[0].vertices.size() * sizeof(float), planets[0].vertices.data(), GL_DYNAMIC_DRAW);
     
     // configure vertex attributes (once)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -210,39 +241,35 @@ int main()
 
     while(!glfwWindowShouldClose(window))
     {
-        float currentTime = glfwGetTime();
-        float deltaTime = currentTime - lastTime;
-        lastTime = currentTime;
+        // float currentTime = glfwGetTime();
+        // float deltaTime = currentTime - lastTime;
+        // lastTime = currentTime;
 
         // clear colors from each pixel every frame
         glClear(GL_COLOR_BUFFER_BIT);
 
         processInput(window); // created to exit on esc key press
 
-        // based on gravity
-        ball.updateVelocity(lastTime);
-
-        // based on current velocity
-        ball.updatePosition(lastTime);
-        ball.updateVertices();
-
-        if (ball.position.y - ball.radius < -1.0f)
-        {
-            // std::cout << "BOUNCED" << std::endl;
-            ball.position.y = -1.0f + ball.radius;
-            ball.updateVertices();
-            ball.velocity.y *= -0.75;
-        }
-
         // render + draw
         aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
         glUniform1f(aspectRatioLocation, aspectRatio);
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, ball.vertices.size() * sizeof(float), ball.vertices.data());
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, ball.vertices.size() / 3);
+
+        for (Object &planet : planets)
+        {
+            // update objects
+            planet.collisionCheck();
+            // based on gravity
+            planet.accelerate(0.0f, -gravityEarth);
+            // based on current velocity
+            planet.updatePosition();
+
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, planet.vertices.size() * sizeof(float), planet.vertices.data());
+            glDrawArrays(GL_TRIANGLE_FAN, 0, planet.vertices.size() / 3);
+        }
 
         glfwSwapBuffers(window); // double buffer rendering
         glfwPollEvents();        // checks for any event triggering, updates window state and calls the right functions
