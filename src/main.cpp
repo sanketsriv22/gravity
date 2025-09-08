@@ -420,9 +420,6 @@ int main()
             glUniform3f(colorLocation, planet.color.R, planet.color.G, planet.color.B);
             glDrawArrays(GL_TRIANGLE_FAN, 0, planet.vertices.size() / 3);
         }
-        // std::cout << planets[0].acceleration.x << std::endl;
-        // std::cout << planets[0].acceleration.x << std::endl;
-        // std::cout << planets[0].acceleration.z << std::endl;
 
         glfwSwapBuffers(window); // double buffer rendering
         glfwPollEvents();        // checks for any event triggering, updates window state and calls the right functions
