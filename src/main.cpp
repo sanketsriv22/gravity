@@ -81,15 +81,17 @@ public:
     float mass;
     Vector3 position;
     Vector3 velocity;
+    Vector3 acceleration;
     std::vector<float> vertices;
 
     Object() : 
-        radius{0.05f},
+        radius{0.025f},
         numParts{50},
-        mass{0.1f},
+        mass{3.14159f*radius*radius*1e7f}, // how should i represent mass? area for now
         position{0.0f, 0.0f, 0.0f},
         velocity{0.0f, 0.0f, 0.0f},
-        vertices{generateVertices()}
+        vertices{generateVertices()},
+        acceleration{0.0f, 0.0f, 0.0f}
         {};
 
     Vector3 const GetPosition()
@@ -126,10 +128,11 @@ public:
         updateVertices();
     }
 
-    void accelerate(float aX, float aY)
+    void accelerate()
     {
-        this->velocity.x += aX;
-        this->velocity.y += aY;
+        this->velocity.x += this->acceleration.x;
+        this->velocity.y += this->acceleration.y;
+        this->velocity.z += this->acceleration.z;
     }
 
     void collisionCheck()
@@ -146,8 +149,77 @@ public:
             updateVertices();
             this->velocity.x *= -0.95;
         }
+        if (this->position.y + this->radius > 1.0f)
+        {
+            this->position.y = 1.0f - this->radius;
+            updateVertices();
+            this->velocity.y *= -0.95;
+        }
+        if (this->position.x - this->radius < -1.0f)
+        {
+            this->position.x = -1.0f + this->radius;
+            updateVertices();
+            this->velocity.x *= -0.95;
+        }
     }
 };
+
+
+struct twoBody
+{
+    std::vector<Object*> planets;
+    Vector3 distances;
+    float totalDistance;
+    float force;
+
+    // twoBody(std::vector<Object&> planets
+    twoBody(Object& obj1, Object& obj2)
+        : planets{&obj1, &obj2}, distances{0.0f, 0.0f, 0.0f},
+          totalDistance(0.0f), force(0.0f)
+    {}
+
+    void componentDistanceCalculation()
+    {
+        this->distances.x = pow(planets[0]->position.x-planets[1]->position.x, 2.0f);
+        this->distances.y = pow(planets[0]->position.y-planets[1]->position.y, 2.0f);
+        this->distances.z = pow(planets[0]->position.z-planets[1]->position.z, 2.0f);
+    }
+    
+    void totalDistanceCalculation()
+    {
+        this->totalDistance = sqrtf(this->distances.x + this->distances.y + this->distances.z);
+    }
+
+
+    void forceCalculation()
+    {
+        float numerator = gravityConstant * planets[1]->mass * planets[0]->mass;
+        float denominator = pow(totalDistance, 2);
+        force = numerator / denominator;
+    }
+
+    void calcSingleAccelerationComponents(Object &obj) 
+    {
+        float totalAcceleration = force / obj.mass;
+
+        obj.acceleration.x = (distances.x / totalDistance) * totalAcceleration;
+        obj.acceleration.y = (distances.y / totalDistance) * totalAcceleration;
+        obj.acceleration.z = (distances.z / totalDistance) * totalAcceleration;
+    }
+
+    void calculateSystemProperties()
+    {
+        componentDistanceCalculation();
+        totalDistanceCalculation();
+        forceCalculation();
+        for (Object *obj: planets)
+        {
+            calcSingleAccelerationComponents(*obj);
+        }
+    }
+};
+
+
 
 
 int main()
@@ -215,11 +287,13 @@ int main()
     planets.push_back(Object());
     planets.push_back(Object());
 
-    // change starting position
+    // offset starting position
     planets[0].position = {-0.2f, 0.0f, 0.0f};
     planets[0].updateVertices();
     planets[1].position = {+0.2f, 0.0f, 0.0f};
     planets[1].updateVertices();
+
+    twoBody system(planets[0], planets[1]);
 
     // vertex array and buffer objects (is it good practice to have a separate vbo/vao for each planet?)
     GLuint VAO, VBO;
@@ -241,9 +315,11 @@ int main()
 
     while(!glfwWindowShouldClose(window))
     {
-        // float currentTime = glfwGetTime();
-        // float deltaTime = currentTime - lastTime;
-        // lastTime = currentTime;
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - lastTime;
+
+        // if deltaTime
+        lastTime = currentTime;
 
         // clear colors from each pixel every frame
         glClear(GL_COLOR_BUFFER_BIT);
@@ -257,12 +333,15 @@ int main()
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
 
+        // update twoBody here
+        system.calculateSystemProperties();
+
         for (Object &planet : planets)
         {
             // update objects
             planet.collisionCheck();
-            // based on gravity
-            planet.accelerate(0.0f, -gravityEarth);
+            // based on other forces
+            planet.accelerate();
             // based on current velocity
             planet.updatePosition();
 
@@ -270,6 +349,9 @@ int main()
             glBufferSubData(GL_ARRAY_BUFFER, 0, planet.vertices.size() * sizeof(float), planet.vertices.data());
             glDrawArrays(GL_TRIANGLE_FAN, 0, planet.vertices.size() / 3);
         }
+        std::cout << planets[0].acceleration.x << std::endl;
+        // std::cout << planets[0].acceleration.x << std::endl;
+        // std::cout << planets[0].acceleration.z << std::endl;
 
         glfwSwapBuffers(window); // double buffer rendering
         glfwPollEvents();        // checks for any event triggering, updates window state and calls the right functions
