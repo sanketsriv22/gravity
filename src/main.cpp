@@ -13,6 +13,8 @@ const float gravityEarth = 9.81f / 50000.0f; //not sure why i need to slow it do
 
 const float gravityConstant = 6.674e-11f; // universal gravitational constant
 
+const float maxVelocity = 0.0f;
+
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "uniform float aspectRatio;\n"
@@ -24,10 +26,12 @@ const char *vertexShaderSource = "#version 330 core\n"
     "}\0";
 
 const char *fragmentShaderSource = "#version 330 core\n"
+    "uniform vec3 uColor;"
     "out vec4 FragColor;\n"
     "void main()\n"
     "{\n"
-    "   FragColor = vec4(1.0f, 0.1f, 0.2f, 1.0f);\n"
+    // "   FragColor = vec4(1.0f, 0.1f, 0.2f, 1.0f);\n"
+    "   FragColor = vec4(uColor, 1.0f);\n"
     "}\0";
 
 // resizing callback
@@ -50,6 +54,11 @@ void processInput(GLFWwindow* window)
 struct Vector3
 {
     float x, y, z;
+};
+
+struct Color
+{
+    float R, G, B;
 };
 
 class Object
@@ -83,15 +92,17 @@ public:
     Vector3 velocity;
     Vector3 acceleration;
     std::vector<float> vertices;
+    Color color;
 
     Object() : 
         radius{0.025f},
         numParts{50},
-        mass{3.14159f*radius*radius*1e7f}, // how should i represent mass? area for now
+        mass{radius*1e4f}, // how should i represent mass? area for now
         position{0.0f, 0.0f, 0.0f},
         velocity{0.0f, 0.0f, 0.0f},
         vertices{generateVertices()},
-        acceleration{0.0f, 0.0f, 0.0f}
+        acceleration{0.0f, 0.0f, 0.0f},
+        color{0.0f, 0.0f, 1.0f}
         {};
 
     Vector3 const GetPosition()
@@ -203,8 +214,6 @@ struct System
 };
 
 
-
-
 int main()
 {
     std::cout << "Beginning an OpenGL project that simulates gravity." << std::endl;
@@ -262,6 +271,7 @@ int main()
 
     // get uniform location for aspect ratio
     GLint aspectRatioLocation = glGetUniformLocation(shaderProgram, "aspectRatio"); 
+    GLint colorLocation = glGetUniformLocation(shaderProgram, "uColor");
 
     // create planets list
     std::vector<Object> planets;
@@ -270,10 +280,12 @@ int main()
     planets.push_back(Object());
     planets.push_back(Object());
 
-    // offset starting position
-    planets[0].position = {-0.2f, 0.0f, 0.0f};
-    planets[0].updateVertices();
-    planets[1].position = {+0.2f, 0.0f, 0.0f};
+    // offset starting values
+    planets[0].color = {1.0f, 1.0f, 0.0f}; // yellow
+    planets[0].radius = 0.05f;
+
+    planets[1].color = {0.0f, 1.0f, 1.0f};
+    planets[1].position = {+0.2f, -0.2f, 0.0f};
     planets[1].updateVertices();
 
     // System system(planets[0], planets[1]);
@@ -323,20 +335,21 @@ int main()
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
 
-        // update twoBody here
+        // update full system here
         system.computeSystemProperties();
 
         for (Object &planet : planets)
         {
             // update objects
             planet.collisionCheck();
-            // based on other forces
             planet.accelerate();
-            // based on current velocity
             planet.updatePosition();
 
+            // update vertex buffer for this planet
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferSubData(GL_ARRAY_BUFFER, 0, planet.vertices.size() * sizeof(float), planet.vertices.data());
+            
+            glUniform3f(colorLocation, planet.color.R, planet.color.G, planet.color.B);
             glDrawArrays(GL_TRIANGLE_FAN, 0, planet.vertices.size() / 3);
         }
         std::cout << planets[0].acceleration.x << std::endl;
