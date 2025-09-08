@@ -165,56 +165,39 @@ public:
 };
 
 
-struct twoBody
+struct System
 {
     std::vector<Object*> planets;
-    Vector3 distances;
-    float totalDistance;
-    float force;
 
-    // twoBody(std::vector<Object&> planets
-    twoBody(Object& obj1, Object& obj2)
-        : planets{&obj1, &obj2}, distances{0.0f, 0.0f, 0.0f},
-          totalDistance(0.0f), force(0.0f)
+    System(std::vector<Object*> bodies)
+        : planets{bodies}
     {}
 
-    void componentDistanceCalculation()
+    void computeSystemProperties()
     {
-        this->distances.x = pow(planets[0]->position.x-planets[1]->position.x, 2.0f);
-        this->distances.y = pow(planets[0]->position.y-planets[1]->position.y, 2.0f);
-        this->distances.z = pow(planets[0]->position.z-planets[1]->position.z, 2.0f);
-    }
-    
-    void totalDistanceCalculation()
-    {
-        this->totalDistance = sqrtf(this->distances.x + this->distances.y + this->distances.z);
-    }
-
-
-    void forceCalculation()
-    {
-        float numerator = gravityConstant * planets[1]->mass * planets[0]->mass;
-        float denominator = pow(totalDistance, 2);
-        force = numerator / denominator;
-    }
-
-    void calcSingleAccelerationComponents(Object &obj) 
-    {
-        float totalAcceleration = force / obj.mass;
-
-        obj.acceleration.x = (distances.x / totalDistance) * totalAcceleration;
-        obj.acceleration.y = (distances.y / totalDistance) * totalAcceleration;
-        obj.acceleration.z = (distances.z / totalDistance) * totalAcceleration;
-    }
-
-    void calculateSystemProperties()
-    {
-        componentDistanceCalculation();
-        totalDistanceCalculation();
-        forceCalculation();
-        for (Object *obj: planets)
+        for (int i = 0; i < planets.size(); i++)
         {
-            calcSingleAccelerationComponents(*obj);
+            Vector3 totalAcceleration = {0.0f, 0.0f, 0.0f};
+            for (int j = 0; j < planets.size(); j++)
+            {
+                if (i==j) continue;
+                Vector3 distance;
+                distance.x = planets[j]->position.x - planets[i]->position.x;
+                distance.y = planets[j]->position.y - planets[i]->position.y;
+                distance.z = planets[j]->position.z - planets[i]->position.z;
+                
+                float r = sqrtf(pow(distance.x, 2) + pow(distance.y, 2) + pow(distance.z, 2));
+                
+                // gravitational acceleration magnitude (mass of i reduces to 1)
+                float a = (gravityConstant * planets[j]->mass) / pow(r, 2);
+
+                Vector3 unitVector = {distance.x/r, distance.y/r, distance.z/r};
+
+                totalAcceleration.x += a*unitVector.x;
+                totalAcceleration.y += a*unitVector.y;
+                totalAcceleration.z += a*unitVector.z;
+            }
+            planets[i]->acceleration = totalAcceleration;
         }
     }
 };
@@ -293,7 +276,14 @@ int main()
     planets[1].position = {+0.2f, 0.0f, 0.0f};
     planets[1].updateVertices();
 
-    twoBody system(planets[0], planets[1]);
+    // System system(planets[0], planets[1]);
+    std::vector<Object*> planetPtrs;
+    for (Object &obj: planets)
+    {
+        planetPtrs.push_back(&obj);
+    } 
+
+    System system(planetPtrs);
 
     // vertex array and buffer objects (is it good practice to have a separate vbo/vao for each planet?)
     GLuint VAO, VBO;
@@ -334,7 +324,7 @@ int main()
         glBindVertexArray(VAO);
 
         // update twoBody here
-        system.calculateSystemProperties();
+        system.computeSystemProperties();
 
         for (Object &planet : planets)
         {
