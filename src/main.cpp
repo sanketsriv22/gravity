@@ -13,8 +13,6 @@ const float gravityEarth = 9.81f / 50000.0f; //not sure why i need to slow it do
 
 const float gravityConstant = 6.674e-11f; // universal gravitational constant
 
-const float maxVelocity = 0.0f;
-
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "uniform float aspectRatio;\n"
@@ -97,7 +95,7 @@ public:
     Object() : 
         radius{0.025f},
         numParts{50},
-        mass{radius*1e4f}, // how should i represent mass? area for now
+        mass{radius*1e7f}, // how should i represent mass? area for now
         position{0.0f, 0.0f, 0.0f},
         velocity{0.0f, 0.0f, 0.0f},
         vertices{generateVertices()},
@@ -283,9 +281,13 @@ int main()
     // offset starting values
     planets[0].color = {1.0f, 1.0f, 0.0f}; // yellow
     planets[0].radius = 0.05f;
+    planets[0].position = {-0.3f, 0.0f, 0.0f};
+    planets[0].velocity = {0.0f, 0.2e-2f, 0.0f};
+    planets[0].updateVertices();
 
-    planets[1].color = {0.0f, 1.0f, 1.0f};
-    planets[1].position = {+0.2f, -0.2f, 0.0f};
+    planets[1].color = {0.0f, 1.0f, 1.0f}; // cyan
+    planets[1].position = {0.3f, 0.0f, 0.0f};
+    planets[1].velocity = {0.0f, -0.2e-2f, 0.0f};
     planets[1].updateVertices();
 
     // System system(planets[0], planets[1]);
