@@ -141,7 +141,7 @@ public:
     Object() : 
         radius{0.025f},
         numParts{50},
-        mass{7.35e9f}, // how should i represent mass? scaled down moon mass for now
+        mass{7.35e8f}, // how should i represent mass? scaled down moon mass for now
         position{0.0f, 0.0f, 0.0f},
         velocity{0.0f, 0.0f, 0.0f},
         vertices{generateVertices()},
@@ -328,6 +328,10 @@ int main()
     GLint aspectRatioLocation = glGetUniformLocation(shaderProgram, "aspectRatio"); 
     GLint colorLocation = glGetUniformLocation(shaderProgram, "uColor");
 
+
+    // FIGURE OUT A WAY TO CREATE SYSTEM MORE EFFICIENTLY
+    // theres a lot of copy overhead here in construction of objects
+
     // create planets list
     std::vector<Object> planets;
 
@@ -403,7 +407,7 @@ int main()
         processInput(window); // created to exit on esc key press
 
         // render + draw
-        // aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
+        aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
         glUniform1f(aspectRatioLocation, aspectRatio);
 
         glUseProgram(shaderProgram);
