@@ -1,3 +1,0 @@
-/Users/sanket/Desktop/c_projects/gravity/build/CMakeFiles/gravity.dir
-/Users/sanket/Desktop/c_projects/gravity/build/CMakeFiles/edit_cache.dir
-/Users/sanket/Desktop/c_projects/gravity/build/CMakeFiles/rebuild_cache.dir
