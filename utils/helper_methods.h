@@ -9,7 +9,7 @@
 // resizing callback for GLFW
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // glfwGetFramebufferSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
+    glfwGetFramebufferSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
     aspectRatio = static_cast<float>(width) / static_cast<float>(height);
     glViewport(0, 0, width, height);
 }
