@@ -5,268 +5,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-
-int SCREEN_WIDTH = 3440, SCREEN_HEIGHT = 1000;
-
-float aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
-
-const float gravityEarth = 9.81f / 50000.0f; //not sure why i need to slow it down so much
-
-const float gravityConstant = 6.674e-11f; // universal gravitational constant
-
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "uniform float aspectRatio;\n"
-    "void main()\n"
-    "{\n"
-    "   vec3 correctedPos = aPos;\n"
-    "   correctedPos.x /= aspectRatio;\n"
-    "   gl_Position = vec4(correctedPos, 1.0);\n"
-    "}\0";
-
-const char *fragmentShaderSource = "#version 330 core\n"
-    "uniform vec3 uColor;"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    // "   FragColor = vec4(1.0f, 0.1f, 0.2f, 1.0f);\n"
-    "   FragColor = vec4(uColor, 1.0f);\n"
-    "}\0";
-
-// resizing callback
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // glfwGetFramebufferSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
-    aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-    glViewport(0, 0, width, height);
-}
-
-// use for escaping program
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    {
-        glfwSetWindowShouldClose(window, GL_TRUE);
-    }
-}
-
-struct Color
-{
-    float R, G, B;
-};
-
-
-struct Vector3
-{
-    float x, y, z;
-
-    Vector3(float x, float y, float z)
-        : x(x), y(y), z(z) {}
-    Vector3() {}
-
-    Vector3 Add(const Vector3& other) const
-    {
-        return Vector3(this->x + other.x, this->y + other.y, this->z + other.z);
-    }
-    
-    Vector3 operator+(const Vector3& other) const
-    {
-        return Add(other);
-    }
-
-    void operator+=(const Vector3& other)
-    {
-        this->x += other.x;
-        this->y += other.y;
-        this->z += other.z;
-    }
-
-    Vector3 scalarMultiply(const float& other) const
-    {
-        return Vector3(this->x * other, this->y * other, this->z * other);
-    }
-    
-    Vector3 operator*(const float& other) const
-    {
-        return scalarMultiply(other);
-    }
-
-    Vector3 operator-(const Vector3& other) const
-    {
-        return Vector3(this->x - other.x, this->y - other.y, this->z - other.z);
-    }
-};
-
-// operator overloading practice for output stream on Vector3 class
-std::ostream& operator<<(std::ostream& stream, const Vector3 &other)
-{
-    stream << '(' << other.x << ", " << other.y << ", " << other.z << ')';
-    return stream;
-}
-
-
-class Object
-{
-private:
-    std::vector<float> generateVertices()
-        {
-            std::vector<float> vertices;
-            vertices.reserve((numParts + 2) * 3);
-
-            // center vertex
-            vertices.insert(vertices.end(), {position.x, position.y, position.z});
-
-            for (int i = 0; i<=numParts; i++)
-            {
-                float angle = 2.0f * 3.14159f * static_cast<float>(i)/numParts;
-                vertices.insert(vertices.end(),
-                {
-                    radius * cos(angle), // x    
-                    radius * sin(angle), // y
-                    position.z           // z
-                });
-            }
-            return vertices;
-        }
-public:
-    float radius;
-    const int numParts;
-    float mass;
-    Vector3 position;
-    Vector3 velocity;
-    Vector3 acceleration;
-    std::vector<float> vertices;
-    Color color;
-
-    Object() : 
-        radius{0.025f},
-        numParts{50},
-        mass{7.35e8f}, // how should i represent mass? scaled down moon mass for now
-        position{0.0f, 0.0f, 0.0f},
-        velocity{0.0f, 0.0f, 0.0f},
-        vertices{generateVertices()},
-        acceleration{0.0f, 0.0f, 0.0f},
-        color{0.0f, 0.0f, 1.0f}
-        {};
-
-    Vector3 const GetPosition()
-    {
-        return position;
-    }
-
-    void updateVertices()
-    // simply updates the vertices vector
-    {
-        // update center
-        this->vertices[0] = this->position.x;
-        this->vertices[1] = this->position.y;
-        this->vertices[2] = this->position.z;
-
-        // update rest of vertices
-        for (int i = 0; i <= this->numParts; i++)
-        {
-            float angle = 2.0f * 3.14159f * static_cast<float>(i)/this->numParts;
-            // start with 3rd index, each vertex has 3 floats
-            int idx = 3 + (i*3);
-            this->vertices[idx]     = this->radius * cos(angle) + this->position.x;
-            this->vertices[idx + 1] = this->radius * sin(angle) + this->position.y;
-            this->vertices[idx + 2] = 0                         + this->position.z;   //unchanged for now
-        }
-    }
-
-    void replacePosition(const Vector3& newPosition)
-    {
-        this->position = newPosition;
-    }
-
-    void replaceVelocity(const Vector3& newVelocity)
-    {
-        this->velocity = newVelocity;
-    }
-
-    void updatePosition(float deltaTime)
-    {
-
-        Vector3 scaledVelocity(this->velocity * deltaTime);
-        Vector3 newPosition(this->position + scaledVelocity);
-        replacePosition(newPosition);
-        updateVertices();
-    }
-
-    void accelerate(float deltaTime)
-    {
-        Vector3 scaledAcceleration(this->acceleration * deltaTime);
-        Vector3 newVelocity(this->velocity + scaledAcceleration);
-        replaceVelocity(newVelocity);
-    }
-
-    void collisionCheck(float aspectRatio)
-    {
-        float limitX = aspectRatio;
-        float limitY = 1.0f;
-        // y check
-        if (this->position.y - this->radius < -limitY)
-        {
-            this->position.y = -limitY + this->radius;
-            updateVertices();
-            this->velocity.y *= -0.95;
-        }
-        if (this->position.y + this->radius > limitY)
-        {
-            this->position.y = limitY - this->radius;
-            updateVertices();
-            this->velocity.y *= -0.95;
-        }
-        // x check
-        if (this->position.x - this->radius < -limitX)
-        {
-            this->position.x = -limitX + this->radius;
-            updateVertices();
-            this->velocity.x *= -0.95;
-        }
-        if (this->position.x + this->radius > limitX)
-        {
-            this->position.x = limitX - this->radius;
-            updateVertices();
-            this->velocity.x *= -0.95;
-        }
-    }
-};
-
-
-struct System
-{
-    std::vector<Object*> planets;
-
-    System(std::vector<Object*> bodies)
-        : planets{bodies}
-    {}
-
-    void computeSystemProperties()
-    {
-        for (int i = 0; i < planets.size(); i++)
-        {
-            Vector3 totalAcceleration(0.0f, 0.0f, 0.0f);
-            for (int j = 0; j < planets.size(); j++)
-            {
-                if (i==j) continue;
-
-                Vector3 distance(planets[j]->position - planets[i]->position);
-                
-                float r = sqrtf(pow(distance.x, 2) + pow(distance.y, 2) + pow(distance.z, 2) + 0.01f);
-                
-                // gravitational acceleration magnitude (mass of i reduces to 1)
-                float a = (gravityConstant * planets[j]->mass) / pow(r, 2);
-
-                Vector3 unitVector(distance.x/r, distance.y/r, distance.z/r);
-                
-                totalAcceleration += unitVector*a;
-
-            }
-            planets[i]->acceleration = totalAcceleration;
-        }
-    }
-};
+#include "constants.h"
+#include "structs.h"
+#include "body.h"
+#include "system.h"
+#include "helper_methods.h"
 
 
 int main()
@@ -279,7 +22,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    // glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     // create a window
     GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Gravity Simulation", NULL, NULL);
@@ -330,16 +73,16 @@ int main()
 
 
     // FIGURE OUT A WAY TO CREATE SYSTEM MORE EFFICIENTLY
-    // theres a lot of copy overhead here in construction of objects
+    // theres a lot of copy overhead here in construction of bodies
 
-    // create planets list
-    std::vector<Object> planets;
+    // create planets list 
+    std::vector<Body> planets;
 
     // add 4 planets
-    planets.push_back(Object());
-    planets.push_back(Object());
-    planets.push_back(Object());
-    planets.push_back(Object());
+    planets.push_back(Body());
+    planets.push_back(Body());
+    planets.push_back(Body());
+    planets.push_back(Body());
 
     float iV = 0.3e-1f; // initial velocity
 
@@ -367,10 +110,10 @@ int main()
     planets[3].updateVertices();
 
     // System system(planets[0], planets[1]);
-    std::vector<Object*> planetPtrs;
-    for (Object &obj: planets)
+    std::vector<Body*> planetPtrs;
+    for (Body& body: planets)
     {
-        planetPtrs.push_back(&obj);
+        planetPtrs.push_back(&body);
     } 
 
     System system(planetPtrs);
@@ -416,7 +159,7 @@ int main()
         // update full system here
         system.computeSystemProperties();
 
-        for (Object &planet : planets)
+        for (Body &planet : planets)
         {
             // update objects
             planet.collisionCheck(aspectRatio);

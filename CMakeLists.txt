@@ -25,6 +25,7 @@ target_include_directories(gravity PRIVATE
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/external/glad/include
     ${CMAKE_SOURCE_DIR}/utils
+    ${CMAKE_SOURCE_DIR}/src
 )
 
 find_package(glfw3 REQUIRED)
