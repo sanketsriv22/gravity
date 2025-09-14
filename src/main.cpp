@@ -9,6 +9,7 @@
 #include "structs.h"
 #include "body.h"
 #include "system.h"
+#include "shaders.h"
 #include "helper_methods.h"
 
 
@@ -81,33 +82,33 @@ int main()
     // add 4 planets
     planets.push_back(Body());
     planets.push_back(Body());
-    planets.push_back(Body());
-    planets.push_back(Body());
+    // planets.push_back(Body());
+    // planets.push_back(Body());
 
-    float iV = 0.3e-1f; // initial velocity
+    float iV = 9e-2f; // initial velocity
 
     // offset starting values
     planets[0].color = {1.0f, 1.0f, 0.0f}; // yellow
-    // planets[0].radius = 0.1f;
-    // planets[0].mass = 5.97e10f;
+    planets[0].radius = 0.05f;
+    planets[0].mass = 5.97e11f;
     planets[0].position = {-0.3f, 0.0f, 0.0f};
-    planets[0].velocity = {0.0f, iV, 0.0f};
+    planets[0].velocity = {0.0f, 0.0f, 0.0f};
     planets[0].updateVertices();
 
     planets[1].color = {0.0f, 1.0f, 1.0f}; // cyan
-    planets[1].position = {0.3f, 0.0f, 0.0f};
+    planets[1].position = {-0.2f, 0.0f, 0.0f};
     planets[1].velocity = {0.0f, -iV, 0.0f};
     planets[1].updateVertices();
 
-    planets[2].color = {1.0f, 0.0f, 0.0f}; // red
-    planets[2].position = {0.0f, 0.3f, 0.0f};
-    planets[2].velocity = {iV, 0.0f, 0.0f};
-    planets[2].updateVertices();
+    // planets[2].color = {1.0f, 0.0f, 0.0f}; // red
+    // planets[2].position = {0.0f, 0.3f, 0.0f};
+    // planets[2].velocity = {iV, 0.0f, 0.0f};
+    // planets[2].updateVertices();
     
-    planets[3].color = {1.0f, 0.0f, 1.0f}; // purp
-    planets[3].position = {0.0f, -0.3f, 0.0f};
-    planets[3].velocity = {iV, 0.0f, 0.0f};
-    planets[3].updateVertices();
+    // planets[3].color = {1.0f, 0.0f, 1.0f}; // purp
+    // planets[3].position = {0.0f, -0.3f, 0.0f};
+    // planets[3].velocity = {iV, 0.0f, 0.0f};
+    // planets[3].updateVertices();
 
     // System system(planets[0], planets[1]);
     std::vector<Body*> planetPtrs;
@@ -136,7 +137,7 @@ int main()
 
     float lastTime = glfwGetTime();
 
-    std::cout << planets[0].position << std::endl;
+    // std::cout << planets[0].position << std::endl;
 
     while(!glfwWindowShouldClose(window))
     {

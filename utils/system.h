@@ -24,6 +24,8 @@ struct System
                 if (i==j) continue;
 
                 Vector3 distance(planets[j]->position - planets[i]->position);
+
+                distance.scalarMultiply(2.389e-10f);
                 
                 float r = sqrtf(pow(distance.x, 2) + pow(distance.y, 2) + pow(distance.z, 2) + 0.01f);
                 

@@ -38,9 +38,9 @@ public:
     Color color;
 
     Body() : 
-        radius{0.025f},
+        radius{0.01f},
         numParts{50},
-        mass{7.35e8f}, // how should i represent mass? scaled down moon mass for now
+        mass{7.35e7f}, // how should i represent mass? scaled down moon mass for now
         position{0.0f, 0.0f, 0.0f},
         velocity{0.0f, 0.0f, 0.0f},
         vertices{generateVertices()},
