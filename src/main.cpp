@@ -45,6 +45,11 @@ int main()
     }
 
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // enable 3D depth, adding depth buffer
+    glEnable(GL_DEPTH_TEST);
+
+
     
     // compile a vertex shader
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -62,31 +67,6 @@ int main()
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
-    // Add this right after glLinkProgram(shaderProgram);
-    int success;
-    char infoLog[512];
-
-    // Check vertex shader
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "VERTEX SHADER ERROR: " << infoLog << std::endl;
-    }
-
-    // Check fragment shader
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "FRAGMENT SHADER ERROR: " << infoLog << std::endl;
-    }
-
-    // Check program linking
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "LINKING ERROR: " << infoLog << std::endl;
-    }
-
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -100,14 +80,6 @@ int main()
     GLint planetRadiusLocation = glGetUniformLocation(shaderProgram, "planetRadius");
     GLint centerColorLocation = glGetUniformLocation(shaderProgram, "centerColor");
     GLint edgeColorLocation = glGetUniformLocation(shaderProgram, "edgeColor");
-
-    // After getting uniform locations, add these checks:
-    if (centerColorLocation == -1) std::cout << "centerColor uniform not found!" << std::endl;
-    if (edgeColorLocation == -1) std::cout << "edgeColor uniform not found!" << std::endl;
-    if (planetCenterLocation == -1) std::cout << "planetCenter uniform not found!" << std::endl;
-    if (planetRadiusLocation == -1) std::cout << "planetRadius uniform not found!" << std::endl;
-    if (aspectRatioLocation == -1) std::cout << "aspectRatio uniform not found!" << std::endl;
-
 
     // FIGURE OUT A WAY TO CREATE SYSTEM MORE EFFICIENTLY
     // theres a lot of copy overhead here in construction of bodies
@@ -182,7 +154,7 @@ int main()
         lastTime = currentTime;
 
         // clear colors from each pixel every frame
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // bitwise or operator takes bit masks as args
 
         processInput(window); // created to exit on esc key press
 
