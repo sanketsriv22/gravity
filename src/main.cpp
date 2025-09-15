@@ -56,6 +56,20 @@ int main()
     // enable 3D depth, adding depth buffer
     glEnable(GL_DEPTH_TEST);
 
+    // vertex & fragment shaders for spacetime grid
+    GLuint gridVertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(gridVertexShader, 1, &gridVertexShaderSource, NULL);
+    glCompileShader(gridVertexShader);
+    GLuint gridFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(gridFragmentShader, 1, &gridFragmentShaderSource, NULL);
+    glCompileShader(gridFragmentShader);
+    GLuint gridShaderProgram = glCreateProgram();
+    glAttachShader(gridShaderProgram, gridVertexShader);
+    glAttachShader(gridShaderProgram, gridFragmentShader);
+    glLinkProgram(gridShaderProgram);
+
+    glDeleteShader(gridVertexShader);
+    glDeleteShader(gridFragmentShader);
 
     // compile a vertex shader
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -72,7 +86,6 @@ int main()
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
-
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -194,17 +207,24 @@ int main()
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
         // render + draw
+        
+        // draw spacetime grid
+        glUseProgram(gridShaderProgram);
+        glUniformMatrix4fv(glGetUniformLocation(gridShaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(gridShaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniform3f(glGetUniformLocation(gridShaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
+
+        glBindVertexArray(gridVAO);
+        glDrawArrays(GL_LINES, 0, gridVertices.size() / 3);
+        glBindVertexArray(0);
+        
+
+        // draw planets
         aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
         glUniform1f(aspectRatioLocation, aspectRatio);
 
         glUseProgram(shaderProgram);
-    
         glBindVertexArray(VAO);
-        glBindVertexArray(gridVAO);
-
-        // draw spacetime grid
-
-        glDrawArrays(GL_LINES, 0, gridVertices.size() / 3);
 
         // update full system here
         system.computeSystemProperties();
