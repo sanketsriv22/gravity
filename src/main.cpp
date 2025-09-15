@@ -62,6 +62,32 @@ int main()
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
+    // Add this right after glLinkProgram(shaderProgram);
+    int success;
+    char infoLog[512];
+
+    // Check vertex shader
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "VERTEX SHADER ERROR: " << infoLog << std::endl;
+    }
+
+    // Check fragment shader
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cout << "FRAGMENT SHADER ERROR: " << infoLog << std::endl;
+    }
+
+    // Check program linking
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cout << "LINKING ERROR: " << infoLog << std::endl;
+    }
+
+
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
@@ -70,7 +96,17 @@ int main()
 
     // get uniform location for aspect ratio
     GLint aspectRatioLocation = glGetUniformLocation(shaderProgram, "aspectRatio"); 
-    GLint colorLocation = glGetUniformLocation(shaderProgram, "uColor");
+    GLint planetCenterLocation = glGetUniformLocation(shaderProgram, "planetCenter");
+    GLint planetRadiusLocation = glGetUniformLocation(shaderProgram, "planetRadius");
+    GLint centerColorLocation = glGetUniformLocation(shaderProgram, "centerColor");
+    GLint edgeColorLocation = glGetUniformLocation(shaderProgram, "edgeColor");
+
+    // After getting uniform locations, add these checks:
+    if (centerColorLocation == -1) std::cout << "centerColor uniform not found!" << std::endl;
+    if (edgeColorLocation == -1) std::cout << "edgeColor uniform not found!" << std::endl;
+    if (planetCenterLocation == -1) std::cout << "planetCenter uniform not found!" << std::endl;
+    if (planetRadiusLocation == -1) std::cout << "planetRadius uniform not found!" << std::endl;
+    if (aspectRatioLocation == -1) std::cout << "aspectRatio uniform not found!" << std::endl;
 
 
     // FIGURE OUT A WAY TO CREATE SYSTEM MORE EFFICIENTLY
@@ -88,14 +124,14 @@ int main()
     float iV = 9e-2f; // initial velocity
 
     // offset starting values
-    planets[0].color = {1.0f, 1.0f, 0.0f}; // yellow
+    planets[0].centerColor = {1.0f, 1.0f, 0.0f}; // yellow
     planets[0].radius = 0.05f;
     planets[0].mass = 5.97e11f;
     planets[0].position = {-0.3f, 0.0f, 0.0f};
     planets[0].velocity = {0.0f, 0.0f, 0.0f};
     planets[0].updateVertices();
 
-    planets[1].color = {0.0f, 1.0f, 1.0f}; // cyan
+    planets[1].centerColor = {0.0f, 1.0f, 1.0f}; // cyan
     planets[1].position = {-0.2f, 0.0f, 0.0f};
     planets[1].velocity = {0.0f, -iV, 0.0f};
     planets[1].updateVertices();
@@ -171,7 +207,12 @@ int main()
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferSubData(GL_ARRAY_BUFFER, 0, planet.vertices.size() * sizeof(float), planet.vertices.data());
             
-            glUniform3f(colorLocation, planet.color.R, planet.color.G, planet.color.B);
+            glUniform2f(planetCenterLocation, planet.GetPosition().x, planet.GetPosition().y);
+            glUniform1f(planetRadiusLocation, planet.GetRadius());
+
+            glUniform3f(centerColorLocation, planet.centerColor.R, planet.centerColor.G, planet.centerColor.B);
+            glUniform3f(edgeColorLocation, planet.edgeColor.R, planet.edgeColor.G, planet.edgeColor.B);
+            
             glDrawArrays(GL_TRIANGLE_FAN, 0, planet.vertices.size() / 3);
         }
 

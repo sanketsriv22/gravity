@@ -35,7 +35,8 @@ public:
     Vector3 velocity;
     Vector3 acceleration;
     std::vector<float> vertices;
-    Color color;
+    Color centerColor;
+    Color edgeColor;
 
     Body() : 
         radius{0.01f},
@@ -45,13 +46,12 @@ public:
         velocity{0.0f, 0.0f, 0.0f},
         vertices{generateVertices()},
         acceleration{0.0f, 0.0f, 0.0f},
-        color{0.0f, 0.0f, 1.0f}
+        centerColor{0.0f, 0.0f, 1.0f},
+        edgeColor{0.0f, 0.0f, 0.0f,}
         {};
 
-    Vector3 const GetPosition()
-    {
-        return position;
-    }
+    Vector3 const GetPosition() { return position; }
+    float const GetRadius() { return radius; }
 
     void updateVertices()
     // simply updates the vertices vector
@@ -83,7 +83,7 @@ public:
         this->velocity = newVelocity;
     }
 
-    void updatePosition(float deltaTime)
+    void updatePosition(float& deltaTime)
     {
 
         Vector3 scaledVelocity(this->velocity * deltaTime);
@@ -92,14 +92,14 @@ public:
         updateVertices();
     }
 
-    void accelerate(float deltaTime)
+    void accelerate(float& deltaTime)
     {
         Vector3 scaledAcceleration(this->acceleration * deltaTime);
         Vector3 newVelocity(this->velocity + scaledAcceleration);
         replaceVelocity(newVelocity);
     }
 
-    void collisionCheck(float aspectRatio)
+    void collisionCheck(float& aspectRatio)
     {
         float limitX = aspectRatio;
         float limitY = 1.0f;

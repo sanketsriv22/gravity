@@ -1,0 +1,17 @@
+[
+    {
+        "key": "cmd+shift+r",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Run Current Executable"
+    },
+    // {
+    //     "key": "cmd+shift+enter",
+    //     "command": "workbench.action.tasks.runTask",
+    //     "args": "Build and Run"
+    // },
+    // {
+    //     "key": "cmd+shift+c",
+    //     "command": "workbench.action.tasks.runTask",
+    //     "args": "CMake Configure"
+    // }
+]
