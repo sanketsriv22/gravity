@@ -5,11 +5,15 @@ const char *vertexShaderSource =
     "layout (location = 0) in vec3 aPos;\n"
     "uniform float aspectRatio;\n"
     "out vec2 fragPos;\n"
+    "uniform mat4 model;\n"
+    "uniform mat4 view;\n"
+    "uniform mat4 projection;\n"
     "void main()\n"
     "{\n"
     "   vec3 correctedPos = aPos;\n"
     "   correctedPos.x /= aspectRatio;\n"
-    "   gl_Position = vec4(correctedPos, 1.0);\n"
+    // "   gl_Position = vec4(correctedPos, 1.0);\n"
+    "   gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
     "   fragPos = aPos.xy;\n"
     "}\0";
 

@@ -5,13 +5,16 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "constants.h"
 #include "structs.h"
 #include "body.h"
 #include "system.h"
 #include "shaders.h"
 #include "helper_methods.h"
-
 
 int main()
 {
@@ -81,6 +84,15 @@ int main()
     GLint centerColorLocation = glGetUniformLocation(shaderProgram, "centerColor");
     GLint edgeColorLocation = glGetUniformLocation(shaderProgram, "edgeColor");
 
+    // for 3D perspective
+    GLint modelLoc      = glGetUniformLocation(shaderProgram, "model");
+    GLint viewLoc       = glGetUniformLocation(shaderProgram, "view");
+    GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+
+    // projection matrix
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+
+
     // FIGURE OUT A WAY TO CREATE SYSTEM MORE EFFICIENTLY
     // theres a lot of copy overhead here in construction of bodies
 
@@ -89,7 +101,7 @@ int main()
 
     // add 4 planets
     planets.push_back(Body());
-    planets.push_back(Body());
+    // planets.push_back(Body());
     // planets.push_back(Body());
     // planets.push_back(Body());
 
@@ -98,15 +110,18 @@ int main()
     // offset starting values
     planets[0].centerColor = {1.0f, 1.0f, 0.0f}; // yellow
     planets[0].radius = 0.05f;
+    // planets[0].radius = 0.5f;
     planets[0].mass = 5.97e11f;
-    planets[0].position = {-0.3f, 0.0f, 0.0f};
-    planets[0].velocity = {0.0f, 0.0f, 0.0f};
+    planets[0].position = {0.0f, 0.0f, 0.0f};
+    planets[0].velocity = {0.0f, 0.0f, 0.2f};
     planets[0].updateVertices();
 
-    planets[1].centerColor = {0.0f, 1.0f, 1.0f}; // cyan
-    planets[1].position = {-0.2f, 0.0f, 0.0f};
-    planets[1].velocity = {0.0f, -iV, 0.0f};
-    planets[1].updateVertices();
+    // cameraFront = glm::normalize(planets[0].position - cameraPos);
+
+    // planets[1].centerColor = {0.0f, 1.0f, 1.0f}; // cyan
+    // planets[1].position = {-0.2f, 0.0f, 0.0f};
+    // planets[1].velocity = {0.0f, -iV, 0.0f};
+    // planets[1].updateVertices();
 
     // planets[2].color = {1.0f, 0.0f, 0.0f}; // red
     // planets[2].position = {0.0f, 0.3f, 0.0f};
@@ -145,7 +160,9 @@ int main()
 
     float lastTime = glfwGetTime();
 
-    // std::cout << planets[0].position << std::endl;
+    glUseProgram(shaderProgram);
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
 
     while(!glfwWindowShouldClose(window))
     {
@@ -158,11 +175,15 @@ int main()
 
         processInput(window); // created to exit on esc key press
 
+        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
         // render + draw
         aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
         glUniform1f(aspectRatioLocation, aspectRatio);
 
         glUseProgram(shaderProgram);
+    
         glBindVertexArray(VAO);
 
         // update full system here
@@ -179,9 +200,13 @@ int main()
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferSubData(GL_ARRAY_BUFFER, 0, planet.vertices.size() * sizeof(float), planet.vertices.data());
             
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(planet.position.x, planet.position.y, planet.position.z));
+            model = glm::scale(model, glm::vec3(planet.radius));
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
             glUniform2f(planetCenterLocation, planet.GetPosition().x, planet.GetPosition().y);
             glUniform1f(planetRadiusLocation, planet.GetRadius());
-
             glUniform3f(centerColorLocation, planet.centerColor.R, planet.centerColor.G, planet.centerColor.B);
             glUniform3f(edgeColorLocation, planet.edgeColor.R, planet.edgeColor.G, planet.edgeColor.B);
             

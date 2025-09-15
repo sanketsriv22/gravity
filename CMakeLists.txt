@@ -31,3 +31,6 @@ target_include_directories(gravity PRIVATE
 find_package(glfw3 REQUIRED)
 target_link_libraries(gravity PRIVATE glfw)
 
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(gravity PRIVATE glm::glm)
+
