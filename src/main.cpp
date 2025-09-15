@@ -13,6 +13,7 @@
 #include "structs.h"
 #include "body.h"
 #include "system.h"
+#include "spacetime.h"
 #include "shaders.h"
 #include "helper_methods.h"
 
@@ -56,7 +57,6 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
 
-    
     // compile a vertex shader
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -143,18 +143,31 @@ int main()
 
     System system(planetPtrs);
 
-    // vertex array and buffer objects (is it good practice to have a separate vbo/vao for each planet?)
-    GLuint VAO, VBO;
+    // initialize spacetime grid
+    std::vector<float> gridVertices = generateGridVertices();
 
-    // create and bind VAO first
+    // vertex array and buffer objects (is it good practice to have a separate vbo/vao for each planet?)
+    GLuint VAO, VBO; // planets
+    GLuint gridVAO, gridVBO; // spacetime grid
+
+    // create and bind VAO first for grid
+    glGenVertexArrays(1, &gridVAO);
+    glBindVertexArray(gridVAO);
+    // create and setup VBO for grid
+    glGenBuffers(1, &gridVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+    glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), gridVertices.data(), GL_STATIC_DRAW);
+    // config vertex attributes (same for planets/grid)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // do the same thing for planets
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
-    
     // create and setup VBO
     glGenBuffers(1, &VBO); // passing reference so no copy made
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, planets[0].vertices.size() * sizeof(float), planets[0].vertices.data(), GL_DYNAMIC_DRAW);
-    
     // configure vertex attributes (once)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -164,7 +177,7 @@ int main()
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-
+    // GLFW WINDOW LOOP
     while(!glfwWindowShouldClose(window))
     {
         float currentTime = glfwGetTime();
@@ -187,6 +200,11 @@ int main()
         glUseProgram(shaderProgram);
     
         glBindVertexArray(VAO);
+        glBindVertexArray(gridVAO);
+
+        // draw spacetime grid
+
+        glDrawArrays(GL_LINES, 0, gridVertices.size() / 3);
 
         // update full system here
         system.computeSystemProperties();
