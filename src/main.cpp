@@ -112,7 +112,7 @@ int main()
 
     // offset starting values
     planets[0].centerColor = {1.0f, 1.0f, 0.0f}; // yellow
-    planets[0].radius = 0.05f;
+    planets[0].radius = 0.5f;
     // planets[0].radius = 0.5f;
     planets[0].mass = 5.97e11f;
     planets[0].position = {0.0f, 0.0f, 0.0f};
