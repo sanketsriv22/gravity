@@ -37,8 +37,11 @@ int main()
         return -1;
     }
 
+    // callbacks
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // create a callback for window resizing!
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // initialize GLAD?
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) 
@@ -90,7 +93,7 @@ int main()
     GLint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
     // projection matrix
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.0001f, 100.0f);
 
 
     // FIGURE OUT A WAY TO CREATE SYSTEM MORE EFFICIENTLY
@@ -113,10 +116,8 @@ int main()
     // planets[0].radius = 0.5f;
     planets[0].mass = 5.97e11f;
     planets[0].position = {0.0f, 0.0f, 0.0f};
-    planets[0].velocity = {0.0f, 0.0f, 0.2f};
+    planets[0].velocity = {0.0f, 0.0f, 0.0f};
     planets[0].updateVertices();
-
-    // cameraFront = glm::normalize(planets[0].position - cameraPos);
 
     // planets[1].centerColor = {0.0f, 1.0f, 1.0f}; // cyan
     // planets[1].position = {-0.2f, 0.0f, 0.0f};
@@ -173,7 +174,8 @@ int main()
         // clear colors from each pixel every frame
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // bitwise or operator takes bit masks as args
 
-        processInput(window); // created to exit on esc key press
+        // process all key inputs
+        processInput(window, deltaTime);
 
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
