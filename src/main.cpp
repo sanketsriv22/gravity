@@ -163,6 +163,7 @@ int main()
 
     // vertex array and buffer objects (is it good practice to have a separate vbo/vao for each planet?)
     GLuint VAO, VBO; // planets
+    GLuint EBO; // element buffer object for glDrawElements()
     GLuint gridVAO, gridVBO; // spacetime grid
 
     // create and bind VAO first for grid
@@ -179,10 +180,16 @@ int main()
     // do the same thing for planets
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
+
     // create and setup VBO
     glGenBuffers(1, &VBO); // passing reference so no copy made
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, planets[0].vertices.size() * sizeof(float), planets[0].vertices.data(), GL_DYNAMIC_DRAW);
+    // create and setup EBO
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, planets[0].indices.size() * sizeof(unsigned int), planets[0].indices.data(), GL_DYNAMIC_DRAW);
+
     // configure vertex attributes (once)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -241,10 +248,14 @@ int main()
             // update vertex buffer for this planet
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferSubData(GL_ARRAY_BUFFER, 0, planet.vertices.size() * sizeof(float), planet.vertices.data());
+
+            // update element buffer too
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, planet.indices.size() * sizeof(unsigned int), planet.indices.data());
             
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(planet.position.x, planet.position.y, planet.position.z));
-            model = glm::scale(model, glm::vec3(planet.radius));
+            // model = glm::translate(model, glm::vec3(planet.position.x, planet.position.y, planet.position.z));
+            // model = glm::scale(model, glm::vec3(planet.radius));
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
             glUniform2f(planetCenterLocation, planet.GetPosition().x, planet.GetPosition().y);
