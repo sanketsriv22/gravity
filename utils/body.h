@@ -64,7 +64,7 @@ public:
         // update rest of vertices
         for (int i = 0; i <= this->numParts; i++)
         {
-            float angle = 2.0f * 3.14159f * static_cast<float>(i)/this->numParts;
+            float angle = 2.0f * PI * static_cast<float>(i)/this->numParts;
             // start with 3rd index, each vertex has 3 floats
             int idx = 3 + (i*3);
             this->vertices[idx]     = this->radius * cos(angle) + this->position.x;
