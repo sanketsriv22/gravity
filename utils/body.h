@@ -69,7 +69,9 @@ public:
             int idx = 3 + (i*3);
             this->vertices[idx]     = this->radius * cos(angle) + this->position.x;
             this->vertices[idx + 1] = this->radius * sin(angle) + this->position.y;
-            this->vertices[idx + 2] = 0                         + this->position.z;   //unchanged for now
+            this->vertices[idx + 2] = 0                            + this->position.z;   //unchanged for now
+            // this->vertices[idx + 1] = 0 + this->position.y;
+            // this->vertices[idx + 2] = this->radius * sin(angle) + this->position.z;
         }
     }
 

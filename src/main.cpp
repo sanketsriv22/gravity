@@ -117,7 +117,7 @@ int main()
 
     // add 4 planets
     planets.push_back(Body());
-    // planets.push_back(Body());
+    planets.push_back(Body());
     // planets.push_back(Body());
     // planets.push_back(Body());
 
@@ -125,17 +125,19 @@ int main()
 
     // offset starting values
     planets[0].centerColor = {1.0f, 1.0f, 0.0f}; // yellow
-    planets[0].radius = 0.5f;
+    planets[0].radius = 0.2f;
     // planets[0].radius = 0.5f;
     planets[0].mass = 5.97e11f;
-    planets[0].position = {0.0f, 0.0f, 0.0f};
-    planets[0].velocity = {0.0f, 0.0f, 0.0f};
+    planets[0].position = {0.0f, 0.0f, 1.0f};
+    planets[0].velocity = {0.5f, 0.0f, 0.0f};
     planets[0].updateVertices();
 
-    // planets[1].centerColor = {0.0f, 1.0f, 1.0f}; // cyan
-    // planets[1].position = {-0.2f, 0.0f, 0.0f};
-    // planets[1].velocity = {0.0f, -iV, 0.0f};
-    // planets[1].updateVertices();
+    planets[1].centerColor = {0.0f, 1.0f, 1.0f}; // cyan
+    planets[1].radius = 0.5f;
+    planets[1].mass = 5.97e13f;
+    planets[1].position = {0.0f, 0.0f, 0.0f};
+    planets[1].velocity = {0.0f, 0.0f, 0.0f};
+    planets[1].updateVertices();
 
     // planets[2].color = {1.0f, 0.0f, 0.0f}; // red
     // planets[2].position = {0.0f, 0.3f, 0.0f};
@@ -232,7 +234,7 @@ int main()
         for (Body &planet : planets)
         {
             // update objects
-            planet.collisionCheck(aspectRatio);
+            // planet.collisionCheck(aspectRatio);
             planet.accelerate(deltaTime);
             planet.updatePosition(deltaTime);
 
