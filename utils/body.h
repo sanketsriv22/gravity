@@ -99,8 +99,8 @@ public:
     Body() : 
         radius{0.01f},
         numParts{50},
-        latSegs{10},
-        longSegs{10},
+        latSegs{20},
+        longSegs{40},
         mass{7.35e7f}, // how should i represent mass? scaled down moon mass for now
         position{0.0f, 0.0f, 0.0f},
         velocity{0.0f, 0.0f, 0.0f},
