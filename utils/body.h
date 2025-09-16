@@ -27,6 +27,14 @@ private:
             }
             return vertices;
         }
+    std::vector<float> generateSphereVertices()
+    {
+        std::vector<float> vertices;
+
+        
+        
+        return vertices;
+    }
 public:
     float radius;
     const int numParts;
@@ -70,8 +78,6 @@ public:
             this->vertices[idx]     = this->radius * cos(angle) + this->position.x;
             this->vertices[idx + 1] = this->radius * sin(angle) + this->position.y;
             this->vertices[idx + 2] = 0                            + this->position.z;   //unchanged for now
-            // this->vertices[idx + 1] = 0 + this->position.y;
-            // this->vertices[idx + 2] = this->radius * sin(angle) + this->position.z;
         }
     }
 
