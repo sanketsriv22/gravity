@@ -117,7 +117,7 @@ int main()
 
     // add 4 planets
     planets.push_back(Body());
-    planets.push_back(Body());
+    // planets.push_back(Body());
     // planets.push_back(Body());
     // planets.push_back(Body());
 
@@ -125,19 +125,19 @@ int main()
 
     // offset starting values
     planets[0].centerColor = {1.0f, 1.0f, 0.0f}; // yellow
-    planets[0].radius = 0.2f;
+    planets[0].radius = 0.5f;
     // planets[0].radius = 0.5f;
-    planets[0].mass = 5.97e11f;
-    planets[0].position = {0.0f, 0.0f, 1.0f};
-    planets[0].velocity = {0.5f, 0.0f, 0.0f};
-    planets[0].updateVertices();
+    planets[0].mass = 5.97e13f;
+    planets[0].position = {0.0f, 0.0f, 0.0f};
+    planets[0].velocity = {0.0f, 0.0f, 0.0f};
+    planets[0].updateSphereVertices();
 
-    planets[1].centerColor = {0.0f, 1.0f, 1.0f}; // cyan
-    planets[1].radius = 0.5f;
-    planets[1].mass = 5.97e13f;
-    planets[1].position = {0.0f, 0.0f, 0.0f};
-    planets[1].velocity = {0.0f, 0.0f, 0.0f};
-    planets[1].updateVertices();
+    // planets[1].centerColor = {0.0f, 1.0f, 1.0f}; // cyan
+    // planets[1].radius = 0.2f;
+    // planets[1].mass = 5.97e11f;
+    // planets[1].position = {0.0f, 0.0f, 1.0f};
+    // planets[1].velocity = {0.5f, 0.0f, 0.0f};
+    // planets[1].updateVertices();
 
     // planets[2].color = {1.0f, 0.0f, 0.0f}; // red
     // planets[2].position = {0.0f, 0.3f, 0.0f};
@@ -252,7 +252,8 @@ int main()
             glUniform3f(centerColorLocation, planet.centerColor.R, planet.centerColor.G, planet.centerColor.B);
             glUniform3f(edgeColorLocation, planet.edgeColor.R, planet.edgeColor.G, planet.edgeColor.B);
             
-            glDrawArrays(GL_TRIANGLE_FAN, 0, planet.vertices.size() / 3);
+            // glDrawArrays(GL_TRIANGLE_FAN, 0, planet.vertices.size() / 3); // 2D circle
+            glDrawElements(GL_TRIANGLES, planet.indices.size(), GL_UNSIGNED_INT, 0); // 3D sphere
         }
 
         glfwSwapBuffers(window); // double buffer rendering
