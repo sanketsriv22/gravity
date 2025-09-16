@@ -15,8 +15,8 @@ const float gravityConstant = 6.674e-15f; // scaled universal gravitational cons
 const double PI = 3.1415926535897;
 
 // camera vars
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.2f, 1.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 3.0f, 1.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, -1.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 float camVConst = 0.2f;
